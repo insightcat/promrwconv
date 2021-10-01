@@ -17,22 +17,26 @@ go_gc_duration_seconds{quantile="1"} 0.027297214
 go_gc_duration_seconds_sum 0.102844028
 go_gc_duration_seconds_count 394`)
 
-req, reqErr := promrwconv.MetricsToPromRWRequest(metrics)
-if reqErr != nil {
-	return fmt.Error("failed to convert metrics to remote write request: %w", reqErr)
+rwReq, rwReqErr := promrwconv.MetricsToPromRWRequest(metrics)
+if rwReqErr != nil {
+	return fmt.Error("failed to convert metrics to remote write request: %w", rwReqErr)
 }
 
-data, mErr := proto.Marshal(req)
+data, mErr := proto.Marshal(rwReq)
 if mErr != nil {
     return fmt.Errorf("failed to marshal request to protobuf: %w", mErr)
 }
 
 encoded := snappy.Encode(nil, data)
 
-req, httpReqErr := http.NewRequest("POST", "prometheus-remote-write-url-here", bytes.NewReader(encoded))
-if httpReqErr != nil {
-    return fmt.Errorf("failed to create http request: %w", httpReqErr)
+req, reqErr := http.NewRequest("POST", "prometheus-remote-write-url-here", bytes.NewReader(encoded))
+if reqErr != nil {
+    return fmt.Errorf("failed to create http request: %w", reqErr)
 }
+
+req.Header.Set("Content-Type", "application/x-protobuf")
+req.Header.Set("Content-Encoding", "snappy")
+req.Header.Set("X-Prometheus-Remote-Write-Version", "0.1.0")
 
 // You are ready to send the request.
 ```
@@ -40,3 +44,16 @@ if httpReqErr != nil {
 To learn more about Prometheus Remote Write protocol:
 - [Integrating Long-Term Storage with Prometheus [A] - Julius Volz, Prometheus](https://www.youtube.com/watch?v=MuHkckZg5L0)
 - [Things you wish you never knew about the Prometheus Remote Write API](https://drive.google.com/file/d/0B0tWC_gFU85NY1Zub3hTVUQzb0U/view?resourcekey=0-rbBZShSxVNRIV0dFfQRGig)
+
+## Benchmarks
+
+```text
+goos: darwin
+goarch: amd64
+pkg: github.com/insightcat/promrwconv
+cpu: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
+Benchmark_parseMetrics-12                   3013            345070 ns/op          182802 B/op       6032 allocs/op
+Benchmark_parseLabels-12                 1629504               747.7 ns/op           464 B/op         17 allocs/op
+Benchmark_parseMetricLine-12             3677604               326.5 ns/op           188 B/op          7 allocs/op
+Benchmark_countMetricLines-12             125007              9373 ns/op            4097 B/op          1 allocs/op
+```

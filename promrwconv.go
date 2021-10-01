@@ -29,8 +29,7 @@ var (
 	equalSep = []byte("=")
 )
 
-// MetricsToPromRWRequest converts given bytes slice with text based Prometheus
-// format to Prometheus remote write Request.
+// MetricsToPromRWRequest transform Prometheus text-based metrics to Prometheus Remote Write request.
 func MetricsToPromRWRequest(metrics []byte) (*prompb.WriteRequest, error) {
 	return parseMetrics(metrics)
 }
@@ -57,7 +56,7 @@ func parseMetrics(metrics []byte) (*prompb.WriteRequest, error) {
 
 		lStartIdx := bytes.Index(scanner.Bytes(), labelsOpenMark)
 		if lStartIdx == -1 {
-			ts, tsErr := parseMetric(scanner.Bytes())
+			ts, tsErr := parseMetricLine(scanner.Bytes())
 			if tsErr != nil {
 				return nil, tsErr
 			}
@@ -81,7 +80,7 @@ func parseMetrics(metrics []byte) (*prompb.WriteRequest, error) {
 
 		labelsLine := scanner.Bytes()[lStartIdx+1 : lEndIdx]
 
-		ts, tsErr := parseMetric(metricLine.Bytes())
+		ts, tsErr := parseMetricLine(metricLine.Bytes())
 		if tsErr != nil {
 			return nil, tsErr
 		}
@@ -99,7 +98,7 @@ func parseMetrics(metrics []byte) (*prompb.WriteRequest, error) {
 	return &request, nil
 }
 
-func parseMetric(metricLine []byte) (*prompb.TimeSeries, error) {
+func parseMetricLine(metricLine []byte) (*prompb.TimeSeries, error) {
 	parts := bytes.Split(metricLine, spaceSep)
 	if len(parts) != 2 {
 		return nil, fmt.Errorf("invalid metric line format: '%s'", metricLine)
