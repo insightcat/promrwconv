@@ -1,4 +1,4 @@
-# `promrwconv` - Prometheus remote write protocol conversion library.
+# promrwconv
 
 The `promrwconv` helps to convert Prometheus metrics
 from [text-based exposition format](https://github.com/prometheus/docs/blob/master/content/docs/instrumenting/exposition_formats.md#text-based-format)
