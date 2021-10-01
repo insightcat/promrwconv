@@ -11,6 +11,9 @@ import (
 	"github.com/prometheus/prometheus/prompb"
 )
 
+// bitSize holds value for float bit size.
+const bitSize = 64
+
 var (
 	// readerPool keeps pool of *bytes.Reader to reduce additional allocations
 	// in parseMetrics and countMetricLines functions.
@@ -104,7 +107,7 @@ func parseMetricLine(metricLine []byte) (*prompb.TimeSeries, error) {
 		return nil, fmt.Errorf("invalid metric line format: '%s'", metricLine)
 	}
 
-	val, parseValErr := strconv.ParseFloat(string(bytes.TrimSpace(parts[1])), 64)
+	val, parseValErr := strconv.ParseFloat(string(bytes.TrimSpace(parts[1])), bitSize)
 	if parseValErr != nil {
 		return nil, fmt.Errorf("invalid metric format: failed to convert byte slice to float64: %w", parseValErr)
 	}
