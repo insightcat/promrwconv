@@ -1,12 +1,13 @@
-module github.com/heartwilltell/promrwconv
+module github.com/insightcat/promrwconv
 
 go 1.17
+
+require github.com/prometheus/prometheus v2.5.0+incompatible
 
 require (
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/grpc-ecosystem/grpc-gateway v1.16.0 // indirect
-	github.com/prometheus/prometheus v2.5.0+incompatible // indirect
 	golang.org/x/net v0.0.0-20210928044308-7d9f5e0b762b // indirect
 	golang.org/x/sys v0.0.0-20210510120138-977fb7262007 // indirect
 	golang.org/x/text v0.3.6 // indirect
