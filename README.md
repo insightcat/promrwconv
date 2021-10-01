@@ -1,8 +1,12 @@
 # `promrwconv` - Prometheus remote write protocol conversion library.
 
-The `promrwconv` helps to convert Prometheus metrics from [text-based exposition format](https://github.com/prometheus/docs/blob/master/content/docs/instrumenting/exposition_formats.md#text-based-format) to  [Prometheus Remote Write](https://github.com/prometheus/prometheus/tree/main/prompb) request
+The `promrwconv` helps to convert Prometheus metrics
+from [text-based exposition format](https://github.com/prometheus/docs/blob/master/content/docs/instrumenting/exposition_formats.md#text-based-format)
+to  [Prometheus Remote Write](https://github.com/prometheus/prometheus/tree/main/prompb) request
 
-## ⚠️ Work in progress - API may change
+## ⚠️ Work in progress
+
+The main API which is `MetricsToPromRWRequest` function is stable. API may extend to add more functionality. The functions still has a lot of allocations which should be avoided.
 
 ## Usage
 
@@ -19,19 +23,19 @@ go_gc_duration_seconds_count 394`)
 
 rwReq, rwReqErr := promrwconv.MetricsToPromRWRequest(metrics)
 if rwReqErr != nil {
-	return fmt.Error("failed to convert metrics to remote write request: %w", rwReqErr)
+return fmt.Error("failed to convert metrics to remote write request: %w", rwReqErr)
 }
 
 data, mErr := proto.Marshal(rwReq)
 if mErr != nil {
-    return fmt.Errorf("failed to marshal request to protobuf: %w", mErr)
+return fmt.Errorf("failed to marshal request to protobuf: %w", mErr)
 }
 
 encoded := snappy.Encode(nil, data)
 
 req, reqErr := http.NewRequest("POST", "prometheus-remote-write-url-here", bytes.NewReader(encoded))
 if reqErr != nil {
-    return fmt.Errorf("failed to create http request: %w", reqErr)
+return fmt.Errorf("failed to create http request: %w", reqErr)
 }
 
 req.Header.Set("Content-Type", "application/x-protobuf")
@@ -42,6 +46,7 @@ req.Header.Set("X-Prometheus-Remote-Write-Version", "0.1.0")
 ```
 
 To learn more about Prometheus Remote Write protocol:
+
 - [Integrating Long-Term Storage with Prometheus [A] - Julius Volz, Prometheus](https://www.youtube.com/watch?v=MuHkckZg5L0)
 - [Things you wish you never knew about the Prometheus Remote Write API](https://drive.google.com/file/d/0B0tWC_gFU85NY1Zub3hTVUQzb0U/view?resourcekey=0-rbBZShSxVNRIV0dFfQRGig)
 
