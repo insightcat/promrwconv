@@ -23,19 +23,19 @@ go_gc_duration_seconds_count 394`)
 
 rwReq, rwReqErr := promrwconv.MetricsToPromRWRequest(metrics)
 if rwReqErr != nil {
-return fmt.Error("failed to convert metrics to remote write request: %w", rwReqErr)
+    return fmt.Error("failed to convert metrics to remote write request: %w", rwReqErr)
 }
 
 data, mErr := proto.Marshal(rwReq)
 if mErr != nil {
-return fmt.Errorf("failed to marshal request to protobuf: %w", mErr)
+    return fmt.Errorf("failed to marshal request to protobuf: %w", mErr)
 }
 
 encoded := snappy.Encode(nil, data)
 
 req, reqErr := http.NewRequest("POST", "prometheus-remote-write-url-here", bytes.NewReader(encoded))
 if reqErr != nil {
-return fmt.Errorf("failed to create http request: %w", reqErr)
+    return fmt.Errorf("failed to create http request: %w", reqErr)
 }
 
 req.Header.Set("Content-Type", "application/x-protobuf")

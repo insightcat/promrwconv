@@ -17,9 +17,9 @@ func Benchmark_parseMetrics(b *testing.B) {
 		b.Fatalf("failed to read test file with metrics: %v", readErr)
 	}
 
-	b.ReportAllocs()
 	b.ResetTimer()
 	b.StartTimer()
+	b.ReportAllocs()
 
 	for i := 0; i < b.N; i++ {
 		parseMetrics(metrics)

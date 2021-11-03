@@ -30,6 +30,8 @@ var (
 	commaSep = []byte(",")
 	// equalSep holds equal separator as byte slice.
 	equalSep = []byte("=")
+	// empty represents an empty byte slice.
+	empty = []byte("")
 )
 
 // MetricsToPromRWRequest transform Prometheus text-based metrics to Prometheus Remote Write request.
@@ -131,18 +133,32 @@ func parseMetricLine(metricLine []byte) (*prompb.TimeSeries, error) {
 }
 
 func parseLabels(labelsLine []byte) ([]*prompb.Label, error) {
+	if bytes.ContainsAny(labelsLine, "{}") {
+		return nil, fmt.Errorf("curly bracers should be trimmed: %s", string(labelsLine))
+	}
+
 	labelsKVs := bytes.Split(labelsLine, commaSep)
 	labels := make([]*prompb.Label, 0, len(labelsKVs))
 
 	for _, kv := range labelsKVs {
 		labelKV := bytes.Split(kv, equalSep)
 		if len(labelKV) != 2 {
-			return nil, fmt.Errorf("invalid label format: %s", kv)
+			return nil, fmt.Errorf("invalid label format: %s", labelsLine)
+		}
+
+		key := labelKV[0]
+		if bytes.Equal(key, empty) {
+			return nil, fmt.Errorf("invalid label format: %s", labelsLine)
+		}
+
+		val := bytes.Trim(labelKV[1], `"`)
+		if bytes.Equal(val, empty) {
+			return nil, fmt.Errorf("invalid label format: %s", labelsLine)
 		}
 
 		label := prompb.Label{
-			Name:  string(labelKV[0]),
-			Value: string(bytes.Trim(labelKV[1], `"`)),
+			Name:  string(key),
+			Value: string(val),
 		}
 
 		labels = append(labels, &label)
